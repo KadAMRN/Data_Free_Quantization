@@ -4,6 +4,8 @@ import copy
 import numpy as np
 from utils import visualize_per_layer
 from utils.quantize import UniformQuantize
+from ourplots import display_layer
+import os
 
 
 def _layer_equalization(weight_first, weight_second, bias_first, bn_weight=None, bn_bias=None, s_range=(1e-8, 1e8), signed=False, eps=0):
@@ -58,12 +60,23 @@ def _layer_equalization(weight_first, weight_second, bias_first, bn_weight=None,
 
 
 
-def cross_layer_equalization(graph, relations, targ_type, s_range=[1e-8, 1e8], converge_thres=2e-7, converge_count=20, signed=False, eps=0, visualize_state=False):
+def cross_layer_equalization(graph, relations, targ_type, s_range=[1e-8, 1e8], converge_thres=2e-7, converge_count=20, signed=False, eps=0, visualize_state=True):
     print("Start cross layer equalization")
     with torch.no_grad():
 
         diff = 1e8
         iter_count = 0
+
+        if visualize_state:
+            i=1
+            dir='plots/exp'
+            new_dir = dir + str(i)
+            while os.path.exists(new_dir) == True:
+                i+=1
+                new_dir = dir + str(i)
+            
+            os.makedirs(new_dir)  
+
 
         while diff > converge_thres and iter_count < converge_count:
 
@@ -71,6 +84,11 @@ def cross_layer_equalization(graph, relations, targ_type, s_range=[1e-8, 1e8], c
             
             for rel in relations:
                 layer_first, layer_second, bn_idx = rel.get_idxs()
+
+                if visualize_state:
+                    
+                    display_layer(graph[layer_first].weight.detach(), 'Before equalization',dir=new_dir)
+
 
                 if graph[layer_first].bias is None: # add a fake bias term
                     graph[layer_first].bias = nn.Parameter(data=torch.zeros((graph[layer_first].weight.size(0)), dtype=torch.float32), requires_grad=False)
@@ -81,6 +99,10 @@ def cross_layer_equalization(graph, relations, targ_type, s_range=[1e-8, 1e8], c
                                                                                                                        graph[bn_idx].fake_bias, s_range=s_range, signed=signed, eps=eps)
                 rel.set_scale_vec(S)
                 
+                if visualize_state:
+                    
+                    display_layer(graph[layer_first].weight.detach(), 'After equalization',dir=new_dir)
+
 
             diff_list =[float(torch.mean(torch.abs(graph[layer_idx].weight - state_prev[layer_idx].weight))) for layer_idx in graph if type(graph[layer_idx]) in targ_type]
             diff_tmp = np.sum(diff_list)
