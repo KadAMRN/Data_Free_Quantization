@@ -21,13 +21,13 @@ from utils.quantize import QuantConv2d, QuantNConv2d, QuantMeasure, QConv2d, set
 
 def get_argument():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--quantize", action='store_true')
-    parser.add_argument("--equalize", action='store_true')
-    parser.add_argument("--correction", action='store_true')
-    parser.add_argument("--absorption", action='store_true')
+    parser.add_argument("--quantize", action='store_false')
+    parser.add_argument("--equalize", action='store_false')
+    parser.add_argument("--correction", action='store_false')
+    parser.add_argument("--absorption", action='store_false')
 
-    parser.add_argument("--log", action='store_true')
-    parser.add_argument("--relu", action='store_true')
+    parser.add_argument("--log", action='store_false')
+    parser.add_argument("--relu", action='store_false')
     parser.add_argument("--clip_weight", action='store_true')
     parser.add_argument("--dataset", type=str, default="voc12")
     parser.add_argument("--trainable", action='store_true')

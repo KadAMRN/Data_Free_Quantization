@@ -21,17 +21,17 @@ from utils.quantize import QuantConv2d, QuantLinear, QuantNConv2d, QuantNLinear,
 
 def get_argument():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--quantize", action='store_true')
-    parser.add_argument("--equalize", action='store_true')
+    parser.add_argument("--quantize", action='store_false')
+    parser.add_argument("--equalize", action='store_false')
 
-    parser.add_argument("--correction", action='store_true')
-    parser.add_argument("--absorption", action='store_true')
-    parser.add_argument("--relu", action='store_true')
+    parser.add_argument("--correction", action='store_false')
+    parser.add_argument("--absorption", action='store_false')
+    parser.add_argument("--relu", action='store_false') # must replace relu6 to relu while equalization'
     parser.add_argument("--clip_weight", action='store_true')
     parser.add_argument("--trainable", action='store_true')
 
     parser.add_argument("--resnet", action='store_true')
-    parser.add_argument("--log", action='store_true')
+    parser.add_argument("--log", action='store_false')
 
     # quantize params
     parser.add_argument("--bits_weight", type=int, default=8)
