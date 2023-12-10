@@ -51,4 +51,30 @@ def process_target_layer(layer, graph, bn_module, relu_attached, bottoms, bot, b
     eps = torch.sum(eps.view(weight.size(0), weight.size(1), -1), -1)
 
     bn_res = process_bn_branches(bn_list, relu_attach_list, connect_type_list)
+    
+def quantize_for_bias_correction(x, num_bits=8, min_value=None, max_value=None, inplace=False, symmetric=False, num_chunks=None):
+    """
+    Perform uniform quantization on input tensor, tailored for bias correction.
+
+    Args:
+        x (Tensor): The tensor to be quantized.
+        num_bits (int): Number of bits for quantization.
+        min_value (float, optional): Minimum value for quantization range.
+        max_value (float, optional): Maximum value for quantization range.
+        inplace (bool, optional): If True, perform operation in-place.
+        symmetric (bool, optional): If True, use symmetric quantization.
+        num_chunks (int, optional): Number of chunks to divide the tensor into for quantization.
+
+    Returns:
+        Tensor: The quantized tensor.
+    """
+    # Ensure min/max values are set for better control in bias correction context
+    if min_value is None:
+        min_value = x.min()
+
+    if max_value is None:
+        max_value = x.max()
+
+    return UniformQuantize().apply(x, num_bits, float(min_value), float(max_value), inplace, symmetric, num_chunks)
+
 
