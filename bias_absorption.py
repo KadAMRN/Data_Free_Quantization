@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import copy
+import numpy as np
 
 
 
@@ -13,7 +14,7 @@ def bias_absorption(graph, relations, bottoms, N=3):
                 return True
             idx = bottoms[idx][0]
         return False
-    
+    print("Start bias absorption")
     for rel in relations :
         layer_first, layer_second, bn_idx = rel.get_idxs()
         if not is_relu_activation(layer_second, layer_first, graph, bottoms): # only absorb bias if there is relu activation accoding to the article calcs
@@ -37,7 +38,8 @@ def bias_absorption(graph, relations, bottoms, N=3):
         step_size_i = graph[layer_first].weight.size(0) // num_group 
 
         #assuming that pre-bias activations are distributed normally with the batch normalization shift and scale parameters
-        c = max(0, bn_beta - N * bn_gamma) # non negative vect to be absorbed  
+        c = (bn_beta - N * bn_gamma) # non negative vect to be absorbed  
+        c.clamp_(0)
 
         # reshape layer second weights to be 3D since weights are 4D or 2D initially depending on the layer if conv or linear respectively and gotta check bn shape   
 
@@ -60,3 +62,5 @@ def bias_absorption(graph, relations, bottoms, N=3):
         graph[layer_first].bias.data.add_(-c) # b1_hat=b1-c
         graph[bn_idx].fake_bias.data.add_(-c) # h_hat=h-c
         graph[layer_second].bias.data.add_(wc) # b2_hat=b2+W2*c
+    
+    print("Bias absorption done")
