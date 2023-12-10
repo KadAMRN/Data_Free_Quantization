@@ -3,7 +3,7 @@ import torch.nn as nn
 import copy
 import numpy as np
 from utils.quantize import UniformQuantize
-
+#Corrected Version
 def _quantize_error(param, num_bits=8, reduction='sum', signed=False):
     """
     Calculate the quantization error of the given parameter.
@@ -39,3 +39,5 @@ def _quantize_error(param, num_bits=8, reduction='sum', signed=False):
             print(f"Warning: Reduction method '{reduction}' is not recognized. Returning un-reduced error.")
 
         return eps
+        
+        
