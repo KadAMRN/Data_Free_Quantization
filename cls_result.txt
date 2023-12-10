@@ -1,0 +1,12 @@
+Mobilenet: False, quant: True, relu: True, equalize: True, absorption: True, correction: True, clip: False
+Acc: 0.0
+
+Mobilenet: False, quant: True, relu: True, equalize: True, absorption: True, correction: True, clip: False, distill_range: False
+Acc: 0.8359615384615384
+
+Mobilenet: False, quant: True, relu: True, equalize: True, absorption: True, correction: True, clip: False
+Acc: 0.0
+
+Mobilenet: False, quant: True, relu: True, equalize: True, absorption: True, correction: True, clip: False, distill_range: False
+Acc: 0.8359615384615384
+
