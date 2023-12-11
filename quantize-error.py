@@ -4,7 +4,7 @@ import copy
 import numpy as np
 from utils.quantize import UniformQuantize
 #Corrected Version
-def _quantize_error(param, num_bits=8, reduction='sum', signed=False):
+def quantize_error(param, original_activations, num_bits=8, reduction='sum', signed=False):
     """
     Calculate the quantization error of the given parameter.
 
@@ -22,22 +22,32 @@ def _quantize_error(param, num_bits=8, reduction='sum', signed=False):
     with torch.no_grad():
         # Apply uniform quantization
         param_quant = UniformQuantize().apply(param, num_bits, float(param.min()), float(param.max()), False, signed)
-        # Calculate the error between quantized and original parameter
-        eps = param_quant - param
+        # Calculate the quantization error
+        quantization_error = param_quant - param
+        # Calculate the expected error on the output E[ǫx]
+        expected_error_output = torch.mean(quantization_error * original_activations)
+        # Calculate the correction term E[~y] - E[ǫx]
+        correction_term = torch.mean(original_activations) - expected_error_output
+        # Subtract the correction term from the biased output ey
+        corrected_output = original_activations - correction_term
+        # Calculate the new quantization error after correction
+        corrected_quantization_error = param_quant - corrected_output
 
-        # Reduce the error tensor according to the specified method
+
+        # Reduce the corrected quantization error tensor according to the specified method
         if reduction == 'sum':
-            eps = torch.sum(torch.abs(eps))
+            corrected_error = torch.sum(torch.abs(corrected_quantization_error))
         elif reduction == 'mean':
-            eps = torch.mean(torch.abs(eps))
+            corrected_error = torch.mean(torch.abs(corrected_quantization_error))
         elif reduction == 'channel':
-            eps = torch.sum(torch.abs(eps.view(eps.size(0), -1)), dim=-1)
+            corrected_error = torch.sum(torch.abs(corrected_quantization_error.view(corrected_quantization_error.size(0), -1)), dim=-1)
         elif reduction == 'spatial':
-            eps = torch.sum(torch.abs(eps.view(eps.size(0), eps.size(1), -1)), dim=-1)
-        # If reduction is 'none' or an unrecognized option, return the error as is
+            corrected_error = torch.sum(torch.abs(corrected_quantization_error.view(corrected_quantization_error.size(0), corrected_quantization_error.size(1), -1)), dim=-1)
+        # If reduction is 'none' or an unrecognized option, return the corrected error as is
         elif reduction != 'none':
-            print(f"Warning: Reduction method '{reduction}' is not recognized. Returning un-reduced error.")
+            print(f"Warning: La méthode de réduction '{reduction}' n'est pas reconnue. Retour de l'erreur corrigée non réduite.")
+            corrected_error = corrected_quantization_error
 
-        return eps
+        return corrected_error
         
         

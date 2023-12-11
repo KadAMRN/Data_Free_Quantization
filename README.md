@@ -54,17 +54,17 @@ Dans le cadre de la quantification des DNN, une étape cruciale est la correctio
 ### clip_weight
 La fonction `clip_weight` est utilisée pour contrôler les valeurs des poids dans les DNN, en les limitant à un intervalle spécifié. C'est une étape clé pour la stabilisation des modèles et leur préparation à la quantification.
 
-### _quantize_error
-La fonction `_quantize_error` permet de mesurer l'erreur introduite par la quantification des paramètres dans un modèle. Elle offre une vue détaillée de l'impact de la quantification, essentielle pour optimiser et ajuster les processus de quantification.
+### quantize_error
+La fonction `_quantize_error` permet de mesurer l'erreur introduite par la quantification des paramètres dans un modèle. Elle applique la quantification uniforme au paramètre d'origine, puis calcule l'erreur entre le paramètre quantifié et le paramètre original. Cette erreur est ajustée en fonction des activations préalables de la couche, afin de corriger tout biais introduit par la quantification. Elle est donc essentielle pour évaluer la justesse de la quantification dans le contexte des réseaux de neurones.
 
 ### quantize
-La fonction `quantize` applique une quantification uniforme à un tenseur. Elle joue un rôle central dans la quantification des DNN, permettant une représentation précise et efficace des poids et des activations.
+La fonction `quantize` applique une quantification uniforme à un tenseur. Elle joue un rôle central dans la quantification des DNN,  elle inclut des classes pour la quantification de poids, d'activations et de biais dans les couches convolutionnelles et linéaires. De plus, elle fournit des outils pour mesurer dynamiquement les statistiques des activations pendant l'entraînement permettant une représentation précise et efficace des poids et des activations.
 
 ### UniformQuantize
 `UniformQuantize` est une classe implémentant la quantification uniforme. Elle est fondamentale pour la quantification des réseaux neuronaux, offrant un contrôle précis sur la manière dont les valeurs sont mappées à un ensemble discret.
 
 ### QuantMeasure
-`QuantMeasure` est un module PyTorch pour la quantification dynamique des activations dans un réseau NN. Il enregistre les valeurs minimales et maximales des activations, facilitant une quantification adaptative et précise.
+`QuantMeasure` est un module PyTorch pour la quantification dynamique des activations dans un réseau NN. Il enregistre les valeurs minimales et maximales des activations, facilitant une quantification adaptative et précise en temps réel.
 
 ### bias_correction
 La fonction `bias_correction` est conçue pour ajuster le biais dans les couches d'un DNN après un processus de quantification. Cette fonction est essentielle pour compenser les distorsions introduites par la réduction de la précision des poids. Elle opère en calculant l'espérance des activations et en ajustant les biais des couches cibles, notamment `nn.Conv2d` et `nn.Linear`. Ce processus aide à maintenir la performance globale du modèle en dépit des contraintes imposées par la quantification.
