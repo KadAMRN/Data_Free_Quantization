@@ -2,6 +2,51 @@
 
 ## ImageNet Validation dataset available in the following link : https://drive.google.com/file/d/1Zo0LgHWhFiVheeC21Kfvuv1B9M_tuT_8/view?usp=sharing
 
+## Downloading and Extracting the ImageNet Training Dataset
+
+To set up the ImageNet training dataset, follow these steps:
+
+### 1. Download the Dataset
+Use the following command to download the ImageNet validation dataset:
+
+```bash
+wget https://image-net.org/data/ILSVRC/2012/ILSVRC2012_img_val.tar --no-check-certificate
+```
+2. Extract the Dataset
+Execute the following commands to extract the validation data and organize it into subfolders:
+
+# Create a directory for validation data
+mkdir imagenet/val
+
+# Move the downloaded .tar file to the validation directory
+mv ILSVRC2012_img_val.tar imagenet/val/
+
+# Change to the validation directory
+cd imagenet/val
+
+# Extract the .tar file
+tar -xvf ILSVRC2012_img_val.tar
+
+# Remove the compressed .tar file after extraction
+rm -f ILSVRC2012_img_val.tar
+
+3. Organize the Dataset
+To organize the dataset into class directories, use the script provided by Soumith Chintala. Run the following command:
+
+```bash
+wget -qO- https://raw.githubusercontent.com/soumith/imagenetloader.torch/master/valprep.sh | bash
+```
+This script creates directories for each class and moves the images into their corresponding directories. Your validation directory structure will look like this:
+
+```bash
+imagenet/val/
+├── n01440764
+│   ├── ILSVRC2012_val_00000293.JPEG
+│   ├── ILSVRC2012_val_00002138.JPEG
+│   ├── ......
+├── ......
+```
+
 ## Quantization Bias Correction
 
 Dans le cadre de la quantification des DNN, une étape cruciale est la correction du biais de quantification. Cette correction est nécessaire pour atténuer les impacts négatifs que la quantification peut avoir sur la précision des modèles. La quantification, bien qu'utile pour réduire la taille du modèle et accélérer l'inférence, peut introduire des erreurs et des distorsions dans les poids et les activations du modèle. La section suivante présente les outils et méthodes que nous avons implémentés pour effectuer une correction efficace du biais de quantification, garantissant ainsi que nos modèles quantifiés conservent une performance optimale.
