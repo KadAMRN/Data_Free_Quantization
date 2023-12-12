@@ -1,7 +1,7 @@
 import os
 import time
 import matplotlib.pyplot as plt
-from ourplots import boxplt_graph_weights
+from boxplt_graph_weights import boxplt_and_hist_graph_weights
 
 import torch
 import torch.nn as nn
@@ -10,7 +10,6 @@ import numpy as np
 import argparse
 from tqdm import tqdm
 from modeling.segmentation.deeplab import DeepLab
-from pathlib import Path
 from modeling.segmentation import resnet_v1
 
 from modeling.classification.MobileNetV2 import mobilenet_v2
@@ -18,12 +17,14 @@ from torch.utils.data import DataLoader
 from torchvision import transforms, datasets, models
 
 from utils.relation import create_relation
-from dfq import bias_correction, _quantize_error, clip_weight #, bias_absorption, cross_layer_equalization
+# from dfq import bias_correction, _quantize_error, clip_weight #, bias_absorption, cross_layer_equalization
 from utils.layer_transform import switch_layers, replace_op, restore_op, set_quant_minmax, merge_batchnorm, quantize_targ_layer#, LayerTransform
 from PyTransformer.transformers.torchTransformer import TorchTransformer
 
 from bias_absorption  import bias_absorption
 from Cross_layer_equal import cross_layer_equalization
+from bias_correction import bias_correction
+from clip_weight import clip_weight 
 
 from utils.quantize import QuantConv2d, QuantLinear, QuantNConv2d, QuantNLinear, QuantMeasure, QConv2d, QLinear, set_layer_bits
 
@@ -42,23 +43,20 @@ def get_argument():
     parser.add_argument("--clip_weight", action='store_false')
  
     parser.add_argument("--task", default='cls', type=str, choices=['cls', 'seg'])
-    parser.add_argument("--resnet", action='store_true')
+    parser.add_argument("--resnet", action='store_false')
     parser.add_argument("--log", action='store_true')
 
     # quantize params
-    parser.add_argument("--bits_weight", type=int, default=16)
-    parser.add_argument("--bits_activation", type=int, default=16)
-    parser.add_argument("--bits_bias", type=int, default=16)
-
-    parser.add_argument("--datapath", type=str, default='./val')
+    parser.add_argument("--bits_weight", type=int, default=6)
+    parser.add_argument("--bits_activation", type=int, default=6)
+    parser.add_argument("--bits_bias", type=int, default=6)
 
     return parser.parse_args()
 
 
-def inference_all(model,data_path=Path('./val'),args_gpu=True):
+def inference_all(model,args_gpu=True):
     print("Start inference")
-
-    imagenet_dataset = datasets.ImageFolder(data_path, transforms.Compose([
+    imagenet_dataset = datasets.ImageFolder('./val', transforms.Compose([
         transforms.Resize(256),
         transforms.CenterCrop(224),
         transforms.ToTensor(),
@@ -97,13 +95,13 @@ def main():
     assert args.relu or args.relu == args.equalize, 'must replace relu6 to relu while equalization'
     assert args.equalize or args.absorption == args.equalize, 'must use absorption with equalize'
 
-    data_path = Path(args.datapath) # OS agnositc path
+    
 
     if args.task == 'cls':
 
         data = torch.ones((4, 3, 224, 224))#.cuda()
         if args.resnet:
-            model = models.resnext101_32x8d(pretrained=True)
+            model = models.resnext101_32x8d(weights=models.ResNeXt101_32X8D_Weights.IMAGENET1K_V1)
             # model = models.detection.mask_rcnn.maskrcnn_resnet50_fpn(pretrained=True)
             # model = models.resnet18(pretrained=True)
 
@@ -149,7 +147,7 @@ def main():
     # print(graph)
     # print(len(graph))
 
-    boxplt_graph_weights(graph, title='Before dfq')
+    boxplt_and_hist_graph_weights(graph, title='Before dfq')
 
 
 
@@ -162,29 +160,39 @@ def main():
         targ_layer = [nn.Conv2d, nn.Linear]
 
 
-    if args.quantize:
-        set_layer_bits(graph, args.bits_weight, args.bits_activation, args.bits_bias, targ_layer)
+    # if args.quantize:
+    #     # set_layer_bits(graph, args.bits_weight, args.bits_activation, args.bits_bias, targ_layer)
 
-        model = merge_batchnorm(model, graph, bottoms, targ_layer)
+    model = merge_batchnorm(model, graph, bottoms, targ_layer)
 
 
 
-    boxplt_graph_weights(graph, title='After quantization')
+   
 
 
     #create relations
     if args.equalize :
         res = create_relation(graph, bottoms, targ_layer, delete_single=False)
         if args.equalize:
-            cross_layer_equalization(graph, res, targ_layer, Save_state=False, Treshhold=2e-7)
+            cross_layer_equalization(graph, res, targ_layer, visualize_state=False, converge_thres=2e-7)
 
-            boxplt_graph_weights(graph, title='After equalization')
+            boxplt_and_hist_graph_weights(graph, title='After equalization')
 
 
     if args.absorption:
         bias_absorption(graph, res, bottoms, 3)
 
-        boxplt_graph_weights(graph, title='After absorption')
+        boxplt_and_hist_graph_weights(graph, title='After absorption')
+
+
+
+
+    if args.quantize:
+        set_layer_bits(graph, args.bits_weight, args.bits_activation, args.bits_bias, targ_layer)
+
+        model = merge_batchnorm(model, graph, bottoms, targ_layer)
+
+        boxplt_and_hist_graph_weights(graph, title='After quantization')
     
     if args.clip_weight:
         clip_weight(graph, range_clip=[-15, 15], targ_type=targ_layer)
@@ -197,7 +205,7 @@ def main():
 
         bias_correction(graph, bottoms, targ_layer, bits_weight=args.bits_weight)
 
-        boxplt_graph_weights(graph, title='After bias correction')
+        boxplt_and_hist_graph_weights(graph, title='After bias correction')
 
   
 
@@ -210,7 +218,7 @@ def main():
 
         torch.cuda.empty_cache()
 
-        boxplt_graph_weights(graph, title='After quantization ??? / final')
+        boxplt_and_hist_graph_weights(graph, title='final')
 
 
     if args.gpu :
@@ -219,7 +227,7 @@ def main():
 
     if args.quantize:
         replace_op()
-    acc = inference_all(model,data_path=data_path,args_gpu=args.gpu)
+    acc = inference_all(model,args.gpu)
     # print("Acc: {}".format(acc))
     if args.quantize:
         restore_op()
