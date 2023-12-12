@@ -9,10 +9,12 @@ import torch.nn.functional as F
 import numpy as np
 import argparse
 from tqdm import tqdm
+from modeling.segmentation.deeplab import DeepLab
+from modeling.segmentation import resnet_v1
 
 from modeling.classification.MobileNetV2 import mobilenet_v2
 from torch.utils.data import DataLoader
-from torchvision import transforms, datasets
+from torchvision import transforms, datasets, models
 
 from utils.relation import create_relation
 from dfq import bias_correction, _quantize_error, clip_weight #, bias_absorption, cross_layer_equalization
@@ -36,10 +38,10 @@ def get_argument():
     parser.add_argument("--correction", action='store_false')
     parser.add_argument("--absorption", action='store_false')
     parser.add_argument("--relu", action='store_false') # must replace relu6 to relu while equalization'
-    parser.add_argument("--clip_weight", action='store_true')
+    parser.add_argument("--clip_weight", action='store_false')
  
-
-    parser.add_argument("--resnet", action='store_true')
+    parser.add_argument("--task", default='cls', type=str, choices=['cls', 'seg'])
+    parser.add_argument("--resnet", action='store_false')
     parser.add_argument("--log", action='store_true')
 
     # quantize params
@@ -91,13 +93,33 @@ def main():
     assert args.relu or args.relu == args.equalize, 'must replace relu6 to relu while equalization'
     assert args.equalize or args.absorption == args.equalize, 'must use absorption with equalize'
 
-    data = torch.ones((4, 3, 224, 224))#.cuda()
+    
 
-    if args.resnet:
-        import torchvision.models as models
-        model = models.resnet18(pretrained=True)
-    else:
-        model = mobilenet_v2('modeling/classification/mobilenetv2_1.0-f2a8633.pth.tar')
+    if args.task == 'cls':
+
+        data = torch.ones((4, 3, 224, 224))#.cuda()
+        if args.resnet:
+            model = models.resnext101_32x8d(pretrained=True)
+            # model = models.detection.mask_rcnn.maskrcnn_resnet50_fpn(pretrained=True)
+            # model = models.resnet18(pretrained=True)
+
+        else:
+            model = mobilenet_v2('modeling/classification/mobilenetv2_1.0-f2a8633.pth.tar')
+
+
+    if args.task == 'seg':
+        data = torch.ones((4, 3, 513, 513))
+        model = DeepLab(sync_bn=False)
+        state_dict = torch.load('modeling/segmentation/deeplab-mobilenet.pth.tar')['state_dict']
+        model.load_state_dict(state_dict)
+
+    # data = torch.ones((4, 3, 513, 513))#.cuda()
+
+    # model = resnet_v1(num_layers=152)
+    # # state_dict = torch.load('modeling/segmentation/deeplab-mobilenet.pth.tar')['state_dict']
+    # state_dict = torch.load('modeling/segmentation/res152_faster_rcnn_iter_1190000.pth')
+    # model.load_state_dict(state_dict)
+
     model.eval()
     
 
