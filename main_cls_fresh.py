@@ -1,7 +1,7 @@
 import os
 import time
 import matplotlib.pyplot as plt
-from boxplt_graph_weights import boxplt_graph_weights
+from ourplots import boxplt_graph_weights
 
 import torch
 import torch.nn as nn

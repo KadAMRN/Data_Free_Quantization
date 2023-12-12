@@ -4,7 +4,7 @@ import copy
 import numpy as np
 from utils import visualize_per_layer
 from utils.quantize import UniformQuantize
-from ourplots import display_layer
+from ourplots import save_layer
 import os
 
 
@@ -87,7 +87,7 @@ def cross_layer_equalization(graph, relations, Target_list, s_min_max=[1e-8, 1e8
 
                 if Save_state:
                     
-                    display_layer(graph[layer_first].weight.detach(), 'Before equalization',dir=new_dir)
+                    save_layer(graph[layer_first].weight.detach(), 'Before equalization',dir=new_dir)
 
 
                 if graph[layer_first].bias is None: # add a fake bias term
@@ -101,7 +101,7 @@ def cross_layer_equalization(graph, relations, Target_list, s_min_max=[1e-8, 1e8
                 
                 if Save_state:
                     
-                    display_layer(graph[layer_first].weight.detach(), 'After equalization',dir=new_dir)
+                    save_layer(graph[layer_first].weight.detach(), 'After equalization',dir=new_dir)
 
 
             diff_list =[float(torch.mean(torch.abs(graph[layer_idx].weight - old_graph[layer_idx].weight))) for layer_idx in graph if type(graph[layer_idx]) in Target_list]
