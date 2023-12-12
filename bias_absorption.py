@@ -33,24 +33,56 @@ def bias_absorption(graph, relations, bottoms, N=3):
         layer_second_shape = layer_second_weight.shape
 
 
-        num_group = graph[layer_first].weight.size(0) // graph[layer_second].weight.size(1) 
-        step_size_o = graph[layer_second].weight.size(0) // num_group 
-        step_size_i = graph[layer_first].weight.size(0) // num_group 
+        # num_group = graph[layer_first].weight.size(0) // graph[layer_second].weight.size(1) 
+        # step_size_o = graph[layer_second].weight.size(0) // num_group 
+        # step_size_i = graph[layer_first].weight.size(0) // num_group 
 
-        #assuming that pre-bias activations are distributed normally with the batch normalization shift and scale parameters
-        c = (bn_beta - N * bn_gamma) # non negative vect to be absorbed  
+        # #assuming that pre-bias activations are distributed normally with the batch normalization shift and scale parameters
+        # c = (bn_beta - N * bn_gamma) # non negative vect to be absorbed  
+        # c.clamp_(0)
+
+        # # reshape layer second weights to be 3D since weights are 4D or 2D initially depending on the layer if conv or linear respectively and gotta check bn shape   
+
+        # layer_second_weight = layer_second_weight.view(layer_second_shape[0], layer_second_shape[1], -1)
+
+        # wc = torch.zeros(layer_second_weight.size(0))
+
+        # for i in range(num_group): # to check
+        #     wc[i*step_size_o:(i+1)*step_size_o] = torch.matmul(torch.sum(layer_second_weight[i*step_size_o:(i+1)*step_size_o], -1), c[i*step_size_i:(i+1)*step_size_i])
+
+
+
+        # Get the weights of the second layer and their shape
+        second_layer_weights = graph[layer_second].weight.detach().clone()
+        second_layer_shape = second_layer_weights.shape
+
+        # Calculate the number of groups and the step sizes for the outer and inner loops
+        num_groups = graph[layer_first].weight.size(0) // graph[layer_second].weight.size(1)
+        step_size_outer = graph[layer_second].weight.size(0) // num_groups
+        step_size_inner = graph[layer_first].weight.size(0) // num_groups
+
+        # Calculate the vector to be absorbed, assuming that pre-bias activations are distributed normally
+        # with the batch normalization shift and scale parameters
+        c = (bn_beta - N * bn_gamma)
         c.clamp_(0)
 
-        # reshape layer second weights to be 3D since weights are 4D or 2D initially depending on the layer if conv or linear respectively and gotta check bn shape   
+        # Reshape the second layer weights to be 3D
+        second_layer_weights = second_layer_weights.view(second_layer_shape[0], second_layer_shape[1], -1)
 
-        layer_second_weight = layer_second_weight.view(layer_second_shape[0], layer_second_shape[1], -1)
+        # Initialize the result vector
+        wc = torch.zeros(second_layer_weights.size(0))
 
-        wc = torch.zeros(layer_second_weight.size(0))
+        # Calculate the result vector by multiplying the sum of the second layer weights with the absorption vector
+        for i in range(num_groups):
+            start_outer = i * step_size_outer
+            end_outer = (i + 1) * step_size_outer
+            start_inner = i * step_size_inner
+            end_inner = (i + 1) * step_size_inner
 
-        for i in range(num_group): # to check
-            wc[i*step_size_o:(i+1)*step_size_o] = torch.matmul(torch.sum(layer_second_weight[i*step_size_o:(i+1)*step_size_o], -1), c[i*step_size_i:(i+1)*step_size_i])
-
-
+            wc[start_outer:end_outer] = torch.matmul(
+                torch.sum(second_layer_weights[start_outer:end_outer], -1),
+                c[start_inner:end_inner]
+            )
         # apply absorbtion by updating W and b of layer 2, b of layer 1 and bn of layer 1
 
         # first check if bias in not none, we absorbb bias even if it is none on the layer
