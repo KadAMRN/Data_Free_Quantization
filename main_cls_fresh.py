@@ -10,6 +10,7 @@ import numpy as np
 import argparse
 from tqdm import tqdm
 from modeling.segmentation.deeplab import DeepLab
+from pathlib import Path
 from modeling.segmentation import resnet_v1
 
 from modeling.classification.MobileNetV2 import mobilenet_v2
@@ -41,7 +42,7 @@ def get_argument():
     parser.add_argument("--clip_weight", action='store_false')
  
     parser.add_argument("--task", default='cls', type=str, choices=['cls', 'seg'])
-    parser.add_argument("--resnet", action='store_false')
+    parser.add_argument("--resnet", action='store_true')
     parser.add_argument("--log", action='store_true')
 
     # quantize params
@@ -49,12 +50,15 @@ def get_argument():
     parser.add_argument("--bits_activation", type=int, default=16)
     parser.add_argument("--bits_bias", type=int, default=16)
 
+    parser.add_argument("--datapath", type=str, default='./val')
+
     return parser.parse_args()
 
 
-def inference_all(model,args_gpu=True):
+def inference_all(model,data_path=Path('./val'),args_gpu=True):
     print("Start inference")
-    imagenet_dataset = datasets.ImageFolder('./val', transforms.Compose([
+
+    imagenet_dataset = datasets.ImageFolder(data_path, transforms.Compose([
         transforms.Resize(256),
         transforms.CenterCrop(224),
         transforms.ToTensor(),
@@ -93,7 +97,7 @@ def main():
     assert args.relu or args.relu == args.equalize, 'must replace relu6 to relu while equalization'
     assert args.equalize or args.absorption == args.equalize, 'must use absorption with equalize'
 
-    
+    data_path = Path(args.datapath) # OS agnositc path
 
     if args.task == 'cls':
 
@@ -172,7 +176,7 @@ def main():
     if args.equalize :
         res = create_relation(graph, bottoms, targ_layer, delete_single=False)
         if args.equalize:
-            cross_layer_equalization(graph, res, targ_layer, visualize_state=False, converge_thres=2e-7)
+            cross_layer_equalization(graph, res, targ_layer, Save_state=False, Treshhold=2e-7)
 
             boxplt_graph_weights(graph, title='After equalization')
 
@@ -215,7 +219,7 @@ def main():
 
     if args.quantize:
         replace_op()
-    acc = inference_all(model,args.gpu)
+    acc = inference_all(model,data_path=data_path,args_gpu=args.gpu)
     # print("Acc: {}".format(acc))
     if args.quantize:
         restore_op()
