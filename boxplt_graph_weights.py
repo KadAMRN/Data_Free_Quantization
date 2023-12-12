@@ -35,8 +35,9 @@
 #     plt.show()
 import torch.nn as nn
 
-
+import utils
 from utils.quantize import QuantConv2d, QuantLinear
+
 import matplotlib.pyplot as plt
 import numpy as np
 

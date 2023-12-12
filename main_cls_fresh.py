@@ -9,6 +9,10 @@ import torch.nn.functional as F
 import numpy as np
 import argparse
 from tqdm import tqdm
+
+
+from utils.quantize import QuantConv2d, QuantLinear, QuantNConv2d, QuantNLinear, QuantMeasure, QConv2d, QLinear, set_layer_bits
+
 from modeling.segmentation.deeplab import DeepLab
 from modeling.segmentation import resnet_v1
 
@@ -25,8 +29,7 @@ from bias_absorption  import bias_absorption
 from Cross_layer_equal import cross_layer_equalization
 from bias_correction import bias_correction
 from clip_weight import clip_weight 
-
-from utils.quantize import QuantConv2d, QuantLinear, QuantNConv2d, QuantNLinear, QuantMeasure, QConv2d, QLinear, set_layer_bits
+#from utils import visualize_per_layer
 
 
 def get_argument():
