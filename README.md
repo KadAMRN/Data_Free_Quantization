@@ -1,5 +1,7 @@
 # Data_Free_Quantization
 
+You can access the project report [here](https://www.overleaf.com/read/bhjhjzpwshqx#2d96d5).
+
 ## ImageNet Validation dataset available in the following link : https://drive.google.com/file/d/1Zo0LgHWhFiVheeC21Kfvuv1B9M_tuT_8/view?usp=sharing
 
 ## Downloading and Extracting the ImageNet Training Dataset
@@ -16,20 +18,24 @@ wget https://image-net.org/data/ILSVRC/2012/ILSVRC2012_img_val.tar --no-check-ce
 Execute the following commands to extract the validation data and organize it into subfolders:
 
 # Create a directory for validation data
+```bash
 mkdir imagenet/val
-
+```
 # Move the downloaded .tar file to the validation directory
+```bash
 mv ILSVRC2012_img_val.tar imagenet/val/
-
+```
 # Change to the validation directory
+```bash
 cd imagenet/val
-
+```
 # Extract the .tar file
+```bash
 tar -xvf ILSVRC2012_img_val.tar
-
+```
 # Remove the compressed .tar file after extraction
 rm -f ILSVRC2012_img_val.tar
-
+```
 3. Organize the Dataset
 To organize the dataset into class directories, use the script provided by Soumith Chintala. Run the following command:
 
