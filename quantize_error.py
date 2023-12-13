@@ -6,17 +6,16 @@ from utils.quantize import UniformQuantize
 #Corrected Version
 def quantize_error(param, original_activations, num_bits=8, reduction='sum', signed=False):
     """
-    Calculate the quantization error of the given parameter.
+    Parameters:
+    - param (Tensor): The tensor representing the parameter to be quantized.
+    - num_bits (int): The number of bits to use for quantization.
+    - reduction (str): The method for aggregating the quantization error tensor. 
+                       Choices include 'sum', 'mean', 'channel', 'spatial', or 'none'.
+    - signed (bool): Indicates whether the quantization is signed.
 
-    Args:
-        param (Tensor): The parameter tensor to be quantized.
-        num_bits (int): The number of bits to use for quantization.
-        reduction (str): The method to reduce the quantization error tensor. 
-                         Options are 'sum', 'mean', 'channel', 'spatial', or 'none'.
-        signed (bool): Whether the quantization is signed.
 
     Returns:
-        Tensor: The quantization error, reduced according to the specified method.
+        corrected_error: The quantization error after correction.
     """
     param = param.detach().clone()
     with torch.no_grad():

@@ -1,3 +1,4 @@
+from quantize_error import quantize_error
 from utils.layer_transform import find_prev_bn
 from scipy.stats import norm
 
@@ -47,7 +48,7 @@ def process_target_layer(layer, graph, bn_module, relu_attached, bottoms, bot, b
     """
     bn_list, relu_attach_list, connect_type_list, _ = find_prev_bn(bn_module, relu_attached, graph, bottoms, bot)
     weight = layer.weight.detach().clone()
-    eps = _quantize_error(weight, bits_weight, reduction=None, signed=signed)
+    eps = quantize_error(weight, bits_weight, reduction=None, signed=signed)
     eps = torch.sum(eps.view(weight.size(0), weight.size(1), -1), -1)
 
     bn_res = process_bn_branches(bn_list, relu_attach_list, connect_type_list)
