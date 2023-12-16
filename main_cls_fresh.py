@@ -2,7 +2,6 @@ import os
 import time
 import matplotlib.pyplot as plt
 from boxplt_graph_weights import boxplt_and_hist_graph_weights
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -14,7 +13,7 @@ from tqdm import tqdm
 from utils.quantize import QuantConv2d, QuantLinear, QuantNConv2d, QuantNLinear, QuantMeasure, QConv2d, QLinear, set_layer_bits
 
 from modeling.segmentation.deeplab import DeepLab
-from modeling.segmentation import resnet_v1
+#from modeling.segmentation import resnet_v1
 
 from modeling.classification.MobileNetV2 import mobilenet_v2
 from torch.utils.data import DataLoader
@@ -38,10 +37,10 @@ def get_argument():
     parser.add_argument("--gpu", action='store_true')
 
     parser.add_argument("--quantize", action='store_false')
-    parser.add_argument("--equalize", action='store_false')
+    parser.add_argument("--equalize", action='store_true')
 
     parser.add_argument("--correction", action='store_false')
-    parser.add_argument("--absorption", action='store_false')
+    parser.add_argument("--absorption", action='store_true')
     parser.add_argument("--relu", action='store_false') # must replace relu6 to relu while equalization'
     parser.add_argument("--clip_weight", action='store_false')
  
@@ -104,7 +103,7 @@ def main():
 
         data = torch.ones((4, 3, 224, 224))#.cuda()
         if args.resnet:
-            model = models.resnext101_32x8d(weights=models.ResNeXt101_32X8D_Weights.IMAGENET1K_V1)
+            model = models.resnext101_32x8d(pretrained=True) #use pretrained model
             # model = models.detection.mask_rcnn.maskrcnn_resnet50_fpn(pretrained=True)
             # model = models.resnet18(pretrained=True)
 
@@ -153,14 +152,13 @@ def main():
     boxplt_and_hist_graph_weights(graph, title='Before dfq')
 
 
-
+    #corrected
 
     if args.quantize:
-
-        targ_layer = [QuantConv2d, QuantLinear]
- 
+        targ_layer = (QuantConv2d, QuantLinear)
     else:
-        targ_layer = [nn.Conv2d, nn.Linear]
+        targ_layer = (nn.Conv2d, nn.Linear)
+
 
 
     # if args.quantize:
@@ -177,7 +175,8 @@ def main():
     if args.equalize :
         res = create_relation(graph, bottoms, targ_layer, delete_single=False)
         if args.equalize:
-            cross_layer_equalization(graph, res, targ_layer, visualize_state=False, converge_thres=2e-7)
+
+            cross_layer_equalization(graph, res, targ_layer, Save_state=False, Treshhold=2e-7)
 
             boxplt_and_hist_graph_weights(graph, title='After equalization')
 
@@ -205,7 +204,8 @@ def main():
 
 
     if args.correction:
-
+        #corrected
+        # Without unpacking, pass targ_layer directly
         bias_correction(graph, bottoms, targ_layer, bits_weight=args.bits_weight)
 
         boxplt_and_hist_graph_weights(graph, title='After bias correction')

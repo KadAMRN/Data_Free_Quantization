@@ -1,3 +1,6 @@
+import torch.nn as nn
+
+
 def clip_weight(graph, range_clip=None, targ_type=[nn.Conv2d, nn.Linear]):
     """
     Clips the weights of specified layers in the graph to a given range.
