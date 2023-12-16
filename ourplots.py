@@ -111,8 +111,8 @@ def plot_histograms(graph1, graph2):
 
 def plot_histograms_sub(weights1, weights2):
         # Create a histogram of the weights from both graphs
-        plt.hist(weights1, bins=256, color='blue', label='Graph 1 Weights')
-        plt.hist(weights2, bins=256, color='red', label='Graph 2 Weights', alpha=0.5)
+        plt.hist(weights1, bins=256, color='blue', label='Before DFQ')
+        plt.hist(weights2, bins=256, color='red', label='After DFQ', alpha=0.5)
         plt.xlabel('Weights')
         plt.ylabel('Frequency')
         plt.legend()
