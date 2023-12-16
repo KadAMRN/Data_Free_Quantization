@@ -1,12 +1,16 @@
+import logging
 from quantize_error import quantize_error
 from utils.layer_transform import find_prev_bn
 from scipy.stats import norm
 import torch
 import numpy as np
 from utils.quantize import UniformQuantize
-import torch
-import torch.nn as nn
-import copy
+
+# Initialize logger
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
 
 def _calculate_bias_correction_for_branches(bn_branch, calculate_mean):
     """
@@ -155,6 +159,13 @@ def bias_correction(graph, bottoms, targ_type, bits_weight=8, bn_type=torch.nn.B
         signed (bool, optional): Indicates whether weights are signed. Defaults to False.
     """
 
+    # Basic parameter validations
+    assert isinstance(graph, dict), "Expected 'graph' to be a dictionary."
+    assert isinstance(bottoms, dict), "Expected 'bottoms' to be a dictionary."
+    assert isinstance(targ_type, (type, tuple)), "Expected 'targ_type' to be a type or tuple of types."
+
+    logger.info("Starting bias correction...")
+
     # Helper lambda functions for statistical calculations
     standard_normal = lambda x: torch.from_numpy(norm(0, 1).pdf(x)).float()
     standard_cdf = lambda x: torch.from_numpy(norm.cdf(x)).float()
@@ -214,14 +225,16 @@ def bias_correction(graph, bottoms, targ_type, bits_weight=8, bn_type=torch.nn.B
                 # Apply bias corrections for each branch
                 for connect_type, expect in bn_res.values():
                     bias = _compute_final_bias_correction(eps, (connect_type, expect))
-                    # Before the line causing the error
-
-
-                    _apply_bias_correction(graph[idx_layer], bias)
+                    try:
+                        _apply_bias_correction(graph[idx_layer], bias)
+                    except ValueError as e:
+                        logger.error(f"Error in applying bias correction: {e}")
+                        raise
 
                 # Prepare for next iteration
                 bias_prev = -bias
-
+                
+    logger.info("Bias correction completed.")
 
 '''
 Here are the roles of these functions:
