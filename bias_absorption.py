@@ -2,10 +2,11 @@ import torch
 import torch.nn as nn
 import copy
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 
-def bias_absorption(graph, relations, bottoms, N=3):
+def bias_absorption(graph, relations, bottoms, N=3, visualize=False):
     def is_relu_activation(layer_second, layer_first, graph, bottoms):
         idx = layer_second
         while idx != layer_first:
@@ -15,6 +16,9 @@ def bias_absorption(graph, relations, bottoms, N=3):
             idx = bottoms[idx][0]
         return False
     print("Start bias absorption")
+
+    changed_layers_count = 0
+
     for rel in relations :
         layer_first, layer_second, bn_idx = rel.get_idxs()
         if not is_relu_activation(layer_second, layer_first, graph, bottoms): # only absorb bias if there is relu activation accoding to the article calcs
@@ -26,35 +30,13 @@ def bias_absorption(graph, relations, bottoms, N=3):
         bn_gamma = getattr(graph[bn_idx], 'fake_weight').detach().clone() 
         bn_beta = getattr(graph[bn_idx], 'fake_bias').detach().clone() 
 
-        # Bias coming from the layer equalization can be absorbed from layer 1 into layer 2, layer 1 output being the input of layer 2, weights of layer 1 will stay unchanged
-        # get weights of layer 2
-        layer_second_weight = graph[layer_second].weight.detach().clone()
-        # layer_second_bias = graph[layer_second].bias.detach().clone()
-        layer_second_shape = layer_second_weight.shape
-
-
-        # num_group = graph[layer_first].weight.size(0) // graph[layer_second].weight.size(1) 
-        # step_size_o = graph[layer_second].weight.size(0) // num_group 
-        # step_size_i = graph[layer_first].weight.size(0) // num_group 
-
-        # #assuming that pre-bias activations are distributed normally with the batch normalization shift and scale parameters
-        # c = (bn_beta - N * bn_gamma) # non negative vect to be absorbed  
-        # c.clamp_(0)
-
-        # # reshape layer second weights to be 3D since weights are 4D or 2D initially depending on the layer if conv or linear respectively and gotta check bn shape   
-
-        # layer_second_weight = layer_second_weight.view(layer_second_shape[0], layer_second_shape[1], -1)
-
-        # wc = torch.zeros(layer_second_weight.size(0))
-
-        # for i in range(num_group): # to check
-        #     wc[i*step_size_o:(i+1)*step_size_o] = torch.matmul(torch.sum(layer_second_weight[i*step_size_o:(i+1)*step_size_o], -1), c[i*step_size_i:(i+1)*step_size_i])
-
-
-
+   
         # Get the weights of the second layer and their shape
         second_layer_weights = graph[layer_second].weight.detach().clone()
         second_layer_shape = second_layer_weights.shape
+
+        if visualize:
+            layer_second_bias_tmp = graph[layer_second].bias.detach().clone()
 
         # Calculate the number of groups and the step sizes for the outer and inner loops
         num_groups = graph[layer_first].weight.size(0) // graph[layer_second].weight.size(1)
@@ -87,12 +69,53 @@ def bias_absorption(graph, relations, bottoms, N=3):
 
         # first check if bias in not none, we absorbb bias even if it is none on the layer
         # to check
-        # for layer in [layer_first, layer_second]:
-        #     if graph[layer].bias is None:
-        #         graph[layer].bias = nn.Parameter(data=torch.zeros((graph[layer].weight.size(0)), dtype=torch.float32), requires_grad=False)
+        for layer in [layer_first, layer_second]:
+            if graph[layer].bias is None:
+                graph[layer].bias = nn.Parameter(data=torch.zeros((graph[layer].weight.size(0)), dtype=torch.float32), requires_grad=False)
+
+        
 
         graph[layer_first].bias.data.add_(-c) # b1_hat=b1-c
         graph[bn_idx].fake_bias.data.add_(-c) # h_hat=h-c
         graph[layer_second].bias.data.add_(wc) # b2_hat=b2+W2*c
-    
+
+
+    if visualize:
+
+        unequal_indices = np.where(graph[layer_second].bias.detach().clone() != layer_second_bias_tmp)
+        unequal_biases = graph[layer_second].bias.detach().clone()[unequal_indices]
+        unequal_biases_tmp = layer_second_bias_tmp[unequal_indices]
+
+        if len(unequal_biases) > 0:
+            bias_diff = unequal_biases - unequal_biases_tmp
+            print(f"Difference of biases that have changed for layer {layer_second}: {bias_diff}")
+            changed_layers_count += 1
+
+        print(f"Bias absorption done. Number of layers with changed biases: {changed_layers_count}")
+
+
+
+        # Create a figure with two subplots
+        fig, axs = plt.subplots(2)
+
+        # Plot the histogram of the original biases in the first subplot
+        axs[0].hist(layer_second_bias_tmp.numpy().flatten(), bins=256, color='blue', label='Original Biases')
+        axs[0].set_xlabel('Biases')
+        axs[0].set_ylabel('Frequency')
+        axs[0].legend()
+        axs[0].set_title('Histogram of Original Biases of Layer ' + str(layer_second))
+
+        # Plot the histogram of the updated biases in the second subplot
+        axs[1].hist(graph[layer_second].bias.detach().clone().numpy().flatten(), bins=256, color='red', label='Updated Biases')
+        axs[1].set_xlabel('Biases')
+        axs[1].set_ylabel('Frequency')
+        axs[1].legend()
+        axs[1].set_title('Histogram of Updated Biases of Layer ' + str(layer_second))
+
+        # Show the figure
+        plt.show(block=False)
+        plt.pause(3)  # display for 3 seconds
+        plt.close()
+
+
     print("Bias absorption done")
