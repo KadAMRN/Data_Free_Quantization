@@ -1,5 +1,6 @@
 import os
 import time
+import matplotlib
 import matplotlib.pyplot as plt
 from boxplt_graph_weights import boxplt_and_hist_graph_weights
 import torch
@@ -29,6 +30,25 @@ from Cross_layer_equal import cross_layer_equalization
 from bias_correction import bias_correction
 from clip_weight import clip_weight 
 #from utils import visualize_per_layer
+
+
+def plot_bias_correction(bias_before, bias_after, layer_names=None):
+    if layer_names is None:
+        layer_names = bias_before.keys()
+
+    for name in layer_names:
+        if name in bias_before and name in bias_after:
+            plt.figure(figsize=(10, 6))
+            plt.plot(bias_before[name].cpu().numpy(), label='Before Correction')
+            plt.plot(bias_after[name].cpu().numpy(), label='After Correction')
+            plt.title(f'Bias Correction for {name}')
+            plt.xlabel('Bias Units')
+            plt.ylabel('Bias Value')
+            plt.legend()
+            plt.savefig(f'bias_correction_{name}.png')
+            plt.show()
+        else:
+            print(f"No bias data available for {name}")
 
 
 def get_argument():
@@ -94,6 +114,7 @@ def inference_all(model,args_gpu=True):
 
 def main():
     args = get_argument()
+
     assert args.relu or args.relu == args.equalize, 'must replace relu6 to relu while equalization'
     assert args.equalize or args.absorption == args.equalize, 'must use absorption with equalize'
 
@@ -206,11 +227,17 @@ def main():
     if args.correction:
         #corrected
         # Without unpacking, pass targ_layer directly
-        bias_correction(graph, bottoms, targ_layer, bits_weight=args.bits_weight)
+        # Print available keys
+        
 
-        boxplt_and_hist_graph_weights(graph, title='After bias correction')
+        #bias_correction(graph, bottoms, targ_layer, bits_weight=args.bits_weight)
+        bias_before_correction, bias_after_correction = bias_correction(graph, bottoms, targ_layer, bits_weight=args.bits_weight)
+        print("Layers with recorded bias (before correction):", bias_before_correction.keys())
+        print("Layers with recorded bias (after correction):", bias_after_correction.keys())
 
-  
+        # Call the plotting function
+        plot_bias_correction(bias_before_correction, bias_after_correction)
+
 
     if args.quantize:
         # if not args.trainable :

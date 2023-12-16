@@ -176,9 +176,25 @@ def bias_correction(graph, bottoms, targ_type, bits_weight=8, bn_type=torch.nn.B
     relu_attached = {}
     bias_prev = None
 
+
+    bias_before_correction = {}
+    bias_after_correction = {}
+
+
     with torch.no_grad():
-        for idx_layer in graph:
+        for idx_layer, layer in enumerate(graph.values()):
+            layer_name = f"layer_{idx_layer}"
+
+            if idx_layer not in bottoms:
+                logger.warning(f"Layer index {idx_layer} not found in bottoms")
+                continue  # Skip this iteration
+
             bot = bottoms[idx_layer]
+            if isinstance(layer, targ_type):
+                # Capture bias before correction
+                if hasattr(layer, 'bias') and layer.bias is not None:
+                    bias_before_correction[layer_name] = layer.bias.data.clone()
+
 
             if bot is None or bot[0] == 'Data':
                 continue
@@ -233,8 +249,13 @@ def bias_correction(graph, bottoms, targ_type, bits_weight=8, bn_type=torch.nn.B
 
                 # Prepare for next iteration
                 bias_prev = -bias
-                
+
+                # Capture bias after correction
+                if hasattr(layer, 'bias') and layer.bias is not None:
+                    bias_after_correction[layer_name] = layer.bias.data.clone()
+
     logger.info("Bias correction completed.")
+    return bias_before_correction, bias_after_correction
 
 '''
 Here are the roles of these functions:
