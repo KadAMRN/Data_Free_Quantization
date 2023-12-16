@@ -1,5 +1,5 @@
 """
-Reference: this file is modified from this repo:
+Module Source:
 https://github.com/eladhoffer/quantized.pytorch
 """
 
@@ -10,6 +10,8 @@ import torch.nn.functional as F
 import math
 import numpy as np
 
+# UniformQuantize: A function for performing uniform quantization on an input tensor.
+# This function is sensitive to whether it's running on a CPU or GPU, with CPU being more precise.
 
 class UniformQuantize(InplaceFunction):
     """!
@@ -82,10 +84,12 @@ class UniformQuantize(InplaceFunction):
         grad_input = grad_output
         return grad_input, None, None, None, None, None, None
 
-
+# A helper function for applying uniform quantization.
 def quantize(x, num_bits=8, min_value=None, max_value=None, inplace=False, symmetric=False, num_chunks=None):
     return UniformQuantize().apply(x, num_bits, min_value, max_value, inplace, symmetric, num_chunks)
 
+
+# QuantMeasure: A module for quantizing tensors, with optional dynamic update of statistics.
 
 class QuantMeasure(nn.Module):
     """docstring for QuantMeasure."""
@@ -120,7 +124,8 @@ class QuantMeasure(nn.Module):
 
     def set_update_stat(self, update_stat):
         self.update_stat = update_stat
-
+        
+# QConv2d: A quantized version of the standard Conv2D layer.
 class QConv2d(nn.Conv2d):
     """docstring for QConv2d."""
 
@@ -250,6 +255,8 @@ class QuantNConv2d(nn.Conv2d):
 
         return output
 
+# QLinear: A quantized version of the standard Linear (fully connected) layer.
+
 class QLinear(nn.Linear):
     """docstring for QConv2d."""
 
@@ -355,7 +362,7 @@ class QuantNLinear(nn.Linear):
 
         return output
 
-
+# Function to set the number of bits for weights, activations, and biases in target layers.
 def set_layer_bits(graph, bits_weight=8, bits_activation=8, bits_bias=16, targ_type=None):
     print("Setting num_bits for targ layers...")
     assert targ_type != None, "targ_type cannot be None"
