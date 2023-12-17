@@ -11,7 +11,10 @@ import numpy as np
 import argparse
 from tqdm import tqdm
 from modeling.segmentation.deeplab import DeepLab
-from modeling.segmentation import resnet_v1
+# from modeling.segmentation import resnet_v1
+from torch.utils.data import DataLoader
+from dataset.segmentation.pascal import VOCSegmentation
+from utils.segmentation.utils import forward_all
 
 from modeling.classification.MobileNetV2 import mobilenet_v2
 from torch.utils.data import DataLoader
@@ -38,17 +41,17 @@ def get_argument():
 
     parser.add_argument("--gpu", action='store_true')
     # parser.add_argument("--time_bench", action='store_true')
-    parser.add_argument("--beforeafter", action='store_false')
-    parser.add_argument("--sizedisp", action='store_false')
-    parser.add_argument("--visualize", action='store_false')
+    # parser.add_argument("--beforeafter", action='store_true')
+    parser.add_argument("--sizedisp", action='store_true')
+    parser.add_argument("--visualize", action='store_true')
 
-    parser.add_argument("--quantize", action='store_false')
-    parser.add_argument("--equalize", action='store_false')
+    parser.add_argument("--quantize", action='store_true')
+    parser.add_argument("--equalize", action='store_true')
 
-    parser.add_argument("--correction", action='store_false')
-    parser.add_argument("--absorption", action='store_false')
-    parser.add_argument("--relu", action='store_false') # must replace relu6 to relu while equalization'
-    parser.add_argument("--clip_weight", action='store_false')
+    parser.add_argument("--correction", action='store_true')
+    parser.add_argument("--absorption", action='store_true')
+    parser.add_argument("--relu", action='store_true') # must replace relu6 to relu while equalization'
+    parser.add_argument("--clip_weight", action='store_true')
  
     parser.add_argument("--task", default='cls', type=str, choices=['cls', 'seg'])
     parser.add_argument("--resnet", action='store_true')
@@ -62,41 +65,58 @@ def get_argument():
     return parser.parse_args()
 
 
-def inference_all(model,args_gpu=True):
+def inference_all(model,task,args_gpu=True):
     print("Start inference")
-    imagenet_dataset = datasets.ImageFolder('./val', transforms.Compose([
-        transforms.Resize(256),
-        transforms.CenterCrop(224),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                 std=[0.229, 0.224, 0.225]),
-    ]))
 
-    dataloader = DataLoader(imagenet_dataset, batch_size=256, shuffle=False, num_workers=4, pin_memory=True)
 
-    num_correct = 0
-    num_total = 0
-    with torch.no_grad():
-        for ii, sample in tqdm(enumerate(dataloader), total=len(dataloader), desc="Inference Progress"):
-            if args_gpu:
-                image, label = sample[0].cuda(), sample[1].numpy()
+    if task == 'cls':
+        imagenet_dataset = datasets.ImageFolder('./val', transforms.Compose([
+            transforms.Resize(256),
+            transforms.CenterCrop(224),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                    std=[0.229, 0.224, 0.225]),
+        ]))
 
-            else:
-                image, label = sample[0].cpu(), sample[1].numpy()
+        dataloader = DataLoader(imagenet_dataset, batch_size=256, shuffle=False, num_workers=4, pin_memory=True)
 
-            logits = model(image)
-
-            pred = torch.max(logits, 1)[1].cpu().numpy()
+    if task == 'seg':
             
-            num_correct += np.sum(pred == label)
-            num_total += image.shape[0]
-            
-            # print accuracy for each batch
-            print(f"Batch {ii+1}/{len(dataloader)}: Accuracy: {num_correct/num_total*100:.2f}%")
+        # args = lambda: 0
+        base_size = 513
+        crop_size = 513
+        voc_val = VOCSegmentation(base_size,crop_size, base_dir="./VOCdevkit/VOC2012/", split='val')
+        # voc_val = VOCSegmentation(args, base_dir="/home/jakc4103/WDesktop/dataset/VOCdevkit/VOC2012/", split='val')
+        dataloader = DataLoader(voc_val, batch_size=32, shuffle=False, num_workers=2)
 
-    acc = num_correct / num_total
-    print(f"Final Accuracy: {acc*100:.2f}%")
-    return acc
+        acc = forward_all(model, dataloader, visualize=False, opt=None)
+        return acc
+
+
+    if task == 'cls':
+        num_correct = 0
+        num_total = 0
+        with torch.no_grad():
+            for ii, sample in tqdm(enumerate(dataloader), total=len(dataloader), desc="Inference Progress"):
+                if args_gpu:
+                    image, label = sample[0].cuda(), sample[1].numpy()
+
+                else:
+                    image, label = sample[0].cpu(), sample[1].numpy()
+
+                logits = model(image)
+
+                pred = torch.max(logits, 1)[1].cpu().numpy()
+                
+                num_correct += np.sum(pred == label)
+                num_total += image.shape[0]
+                
+                # print accuracy for each batch
+                print(f"Batch {ii+1}/{len(dataloader)}: Accuracy: {num_correct/num_total*100:.2f}%")
+
+        acc = num_correct / num_total
+        print(f"Final Accuracy: {acc*100:.2f}%")
+        return acc
 
 
 def main():
@@ -110,9 +130,9 @@ def main():
 
         data = torch.ones((4, 3, 224, 224))#.cuda()
         if args.resnet:
-            model = models.resnext101_32x8d(weights=models.ResNeXt101_32X8D_Weights.IMAGENET1K_V1)
+            # model = models.resnext101_32x8d(weights=models.ResNeXt101_32X8D_Weights.IMAGENET1K_V1)
             # model = models.detection.mask_rcnn.maskrcnn_resnet50_fpn(pretrained=True)
-            # model = models.resnet18(pretrained=True)
+            model = models.resnet18(pretrained=True)
 
         else:
             model = mobilenet_v2('modeling/classification/mobilenetv2_1.0-f2a8633.pth.tar')
@@ -178,10 +198,10 @@ def main():
         plt_keys = list(graph_tmp.keys())
         
         # Check if the 18th layer exists and is a convolutional or linear layer in both graphs
-        if len(plt_keys) > 17 and isinstance(graph_tmp[plt_keys[17]], (nn.Conv2d, nn.Linear,QuantConv2d, QuantLinear)) :
+        if len(plt_keys) > 15 and isinstance(graph_tmp[plt_keys[15]], (nn.Conv2d, nn.Linear,QuantConv2d, QuantLinear)) :
 
             # Get the weights of the 18th layer from both graphs
-            weights_tmp = graph_tmp[plt_keys[17]].weight.detach().cpu().numpy().flatten()
+            weights_tmp = graph_tmp[plt_keys[15]].weight.detach().cpu().numpy().flatten()
 
     bottoms = transformer.log.getBottoms()
 
@@ -219,6 +239,7 @@ def main():
        
         if args.visualize:
             boxplt_and_hist_graph_weights(graph, title='After equalization')
+            plot_histograms_sub(weights_tmp,graph[plt_keys[15]].weight.detach().cpu().numpy().flatten())
 
 
     if args.absorption:
@@ -259,11 +280,11 @@ def main():
 
     if args.correction:
 
-        bias_correction(graph, bottoms, targ_layer, bits_weight=args.bits_weight)
+        bias_correction(graph, bottoms, targ_layer, bits_weight=args.bits_weight, visualize=args.visualize)
 
-        if args.visualize:
-            # boxplt_and_hist_graph_weights(graph, title='After bias correction/ final')
-            plot_histograms_sub(graph_tmp[plt_keys[17]].weight.detach().cpu().numpy().flatten(),weights_tmp)
+    if args.visualize:
+        # boxplt_and_hist_graph_weights(graph, title='After bias correction/ final')
+        plot_histograms_sub(weights_tmp,graph[plt_keys[15]].weight.detach().cpu().numpy().flatten())
 
   
 
@@ -294,7 +315,7 @@ def main():
 
 
     start_time = time.time()
-    acc=inference_all(model,args.gpu)
+    acc=inference_all(model,args.task,args.gpu)
     end_time = time.time()
     print(f"Inference time is {end_time - start_time} seconds")
     # print("Acc: {}".format(acc))
@@ -303,11 +324,11 @@ def main():
     if args.quantize:
         restore_op()
     if args.log:
-        with open("cls_result.txt", 'a+') as ww:
-            ww.write("resnet: {}, quant: {}, relu: {}, equalize: {}, absorption: {}, correction: {}, clip: {}\n".format(
-                args.resnet, args.quantize, args.relu, args.equalize, args.absorption, args.correction, args.clip_weight
+        with open("dfq_result.txt", 'a+') as ww:
+            ww.write("task: {}, resnet: {}, relu: {}, equalize: {}, absorption: {}, quantize: {}, correction: {}, clip: {}, bits_weight: {}, bits_activation: {}, bits_bias: {}\n".format(
+                args.task,args.resnet, args.relu, args.equalize, args.absorption, args.quantize, args.correction, args.clip_weight, args.bits_weight, args.bits_activation, args.bits_bias
             ))
-            ww.write("Acc: {}\n\n".format(acc))
+            ww.write("Accuracy: {} %\n\n".format(acc*100))
 
 
 if __name__ == '__main__':
