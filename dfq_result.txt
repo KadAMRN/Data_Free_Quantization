@@ -1,0 +1,66 @@
+task: cls, resnet: False, relu: True, equalize: True, absorption: True, quantize: True, correction: True, clip: True, bits_weight: 8, bits_activcation: 8, bits_bias: 8
+Accuracy: 68.122 %
+
+task: cls, resnet: False, relu: True, equalize: True, absorption: True, quantize: True, correction: True, clip: False, bits_weight: 8, bits_activcation: 8, bits_bias: 8
+Accuracy: 68.122 %
+
+task: cls, resnet: False, relu: True, equalize: True, absorption: True, quantize: True, correction: False, clip: False, bits_weight: 8, bits_activcation: 8, bits_bias: 8
+Accuracy: 68.14 %
+
+task: cls, resnet: False, relu: False, equalize: False, absorption: False, quantize: True, correction: True, clip: True, bits_weight: 8, bits_activcation: 8, bits_bias: 8
+Accuracy: 0.122 %
+
+task: cls, resnet: False, relu: False, equalize: False, absorption: False, quantize: True, correction: True, clip: False, bits_weight: 8, bits_activcation: 8, bits_bias: 8
+Accuracy: 0.11399999999999999 %
+
+task: cls, resnet: False, relu: False, equalize: False, absorption: False, quantize: True, correction: False, clip: False, bits_weight: 8, bits_activcation: 8, bits_bias: 8
+Accuracy: 0.11399999999999999 %
+
+task: cls, resnet: False, relu: True, equalize: True, absorption: True, quantize: True, correction: True, clip: True, bits_weight: 16, bits_activcation: 16, bits_bias: 16
+Accuracy: 70.344 %
+
+task: cls, resnet: False, relu: False, equalize: False, absorption: False, quantize: True, correction: True, clip: True, bits_weight: 16, bits_activcation: 16, bits_bias: 16
+Accuracy: 66.594 %
+
+task: cls, resnet: False, relu: True, equalize: True, absorption: True, quantize: True, correction: False, clip: False, bits_weight: 16, bits_activcation: 16, bits_bias: 16
+Accuracy: 70.782 %
+
+task: cls, resnet: False, relu: False, equalize: False, absorption: False, quantize: True, correction: True, clip: True, bits_weight: 8, bits_activcation: 8, bits_bias: 16
+Accuracy: 0.1 %
+
+task: cls, resnet: False, relu: True, equalize: True, absorption: True, quantize: True, correction: True, clip: True, bits_weight: 8, bits_activcation: 8, bits_bias: 16
+Accuracy: 70.294 %
+
+task: cls, resnet: False, relu: True, equalize: True, absorption: True, quantize: True, correction: False, clip: False, bits_weight: 8, bits_activcation: 8, bits_bias: 16
+Accuracy: 70.272 %
+
+task: cls, resnet: False, relu: True, equalize: True, absorption: True, quantize: False, correction: False, clip: False, bits_weight: 8, bits_activcation: 8, bits_bias: 8
+Accuracy: 71.592 %
+
+task: cls, resnet: False, relu: False, equalize: False, absorption: False, quantize: True, correction: True, clip: False, bits_weight: 8, bits_activcation: 8, bits_bias: 16
+Accuracy: 0.10200000000000001 %
+
+task: cls, resnet: False, relu: False, equalize: False, absorption: False, quantize: True, correction: True, clip: False, bits_weight: 16, bits_activcation: 16, bits_bias: 16
+Accuracy: 69.27799999999999 %
+
+task: cls, resnet: False, relu: False, equalize: False, absorption: False, quantize: True, correction: True, clip: True, bits_weight: 16, bits_activcation: 16, bits_bias: 16
+Accuracy: 66.594 %
+
+task: cls, resnet: False, relu: True, equalize: True, absorption: True, quantize: True, correction: True, clip: False, bits_weight: 16, bits_activcation: 16, bits_bias: 16
+Accuracy: 70.344 %
+
+task: cls, resnet: False, relu: True, equalize: True, absorption: True, quantize: True, correction: True, clip: False, bits_weight: 8, bits_activcation: 8, bits_bias: 16
+Accuracy: 70.294 %
+
+task: cls, resnet: False, relu: True, equalize: True, absorption: False, quantize: True, correction: True, clip: True, bits_weight: 8, bits_activcation: 8, bits_bias: 8
+Accuracy: 68.728 %
+
+task: cls, resnet: False, relu: True, equalize: True, absorption: False, quantize: True, correction: True, clip: True, bits_weight: 8, bits_activcation: 8, bits_bias: 16
+Accuracy: 70.294 %
+
+task: seg, resnet: False, relu: True, equalize: True, absorption: True, quantize: True, correction: True, clip: True, bits_weight: 8, bits_activation: 8, bits_bias: 8
+Accuracy: 90.426 %
+
+task: seg, resnet: False, relu: False, equalize: False, absorption: False, quantize: False, correction: False, clip: False, bits_weight: 8, bits_activation: 8, bits_bias: 8
+Accuracy: 92.198 %
+
