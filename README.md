@@ -1,6 +1,6 @@
 # Data_Free_Quantization
 
-You can access the project report [here]([https://dropsu.sorbonne-universite.fr/s/EJHR4Ytt3g3CHrq]).
+You can access the project report [here](https://dropsu.sorbonne-universite.fr/s/EJHR4Ytt3g3CHrq).
 
 ### ImageNet Validation dataset available in the following link : https://drive.google.com/file/d/1Zo0LgHWhFiVheeC21Kfvuv1B9M_tuT_8/view?usp=sharing
 
