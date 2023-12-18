@@ -194,6 +194,11 @@ These plots illustrate the weight range of different output layers before and af
 
 *Figure: Weight range across various output layers after the equalization process, demonstrating the effect of equalization.*
 
+### After High Biases Absorbtion
+
+<img width="842" alt="image" src="https://github.com/KadAMRN/Data_Free_Quantization/assets/87100217/4b49a4e0-3587-4008-b04f-105e64623548">
+
+*Figure: Histograms of a Conv2D layer bias values before and after high bias absorbtion*
 
 ## Post-Quantization Output
 
@@ -206,10 +211,12 @@ The following figure illustrates the changes in weight distribution across vario
 
 ## Post-Bias Correction Output
 
-After quantization, bias correction is often necessary to adjust the weights further and maintain the model's accuracy. The figure below displays the weight distribution following the bias correction step.
 
-### After Bias Correction
-![After Bias Correction](https://i.imgur.com/R2sHjSo.png)
+<img width="882" alt="image" src="https://github.com/KadAMRN/Data_Free_Quantization/assets/87100217/843c6d09-5ea0-450b-a87d-486b02022bf9">
+
+*Figure: Histograms of original and updated post
+quantization biases via bias correction of a layer for a 3-bit quantization*
+
 
 *Figure: Boxplot and histogram showing weight distribution and frequency after bias correction.*
 
