@@ -45,6 +45,55 @@ To run the code for the "Data_Free_Quantization" project, you need to install sp
 conda install --file Requirements.txt
 ```
 
+### Downloading the Dataset
+#### For the classification task :
+Use the following command to download the ImageNet validation dataset:
+
+```bash
+wget https://image-net.org/data/ILSVRC/2012/ILSVRC2012_img_val.tar --no-check-certificate
+```
+2. Extract the Dataset
+Execute the following commands to extract the validation data and organize it into subfolders:
+
+### Create a directory for validation data
+```bash
+mkdir imagenet/val
+```
+### Move the downloaded .tar file to the validation directory
+```bash
+mv ILSVRC2012_img_val.tar imagenet/val/
+```
+### Change to the validation directory
+```bash
+cd imagenet/val
+```
+### Extract the .tar file
+```bash
+tar -xvf ILSVRC2012_img_val.tar
+```
+# Remove the compressed .tar file after extraction
+rm -f ILSVRC2012_img_val.tar
+```
+3. Organize the Dataset
+To organize the dataset into class directories, use the script provided by Soumith Chintala. Run the following command:
+
+```bash
+wget -qO- https://raw.githubusercontent.com/soumith/imagenetloader.torch/master/valprep.sh | bash
+```
+This script creates directories for each class and moves the images into their corresponding directories. Your validation directory structure will look like this:
+
+```bash
+imagenet/val/
+├── n01440764
+│   ├── ILSVRC2012_val_00000293.JPEG
+│   ├── ILSVRC2012_val_00002138.JPEG
+│   ├── ......
+├── ......
+```
+#### For the segmentation task :
+For our segmantaion task validation we use the Development Kit VOC2012 validation dataset available on the following website : http://host.robots.ox.ac.uk/pascal/VOC/voc2012/#devkit
+It comes as a compressed file that should be extracted and put into the Data_Free_Quantization main folder.
+
 ## Running the Main Function
 ### Executing `main_dfq.py`
 
@@ -169,50 +218,7 @@ To review the detailed outcomes of each configuration, please refer to the `dfq_
 
 To set up the ImageNet training dataset, follow these steps:
 
-### 1. Download the Dataset
-Use the following command to download the ImageNet validation dataset:
 
-```bash
-wget https://image-net.org/data/ILSVRC/2012/ILSVRC2012_img_val.tar --no-check-certificate
-```
-2. Extract the Dataset
-Execute the following commands to extract the validation data and organize it into subfolders:
-
-### Create a directory for validation data
-```bash
-mkdir imagenet/val
-```
-### Move the downloaded .tar file to the validation directory
-```bash
-mv ILSVRC2012_img_val.tar imagenet/val/
-```
-### Change to the validation directory
-```bash
-cd imagenet/val
-```
-### Extract the .tar file
-```bash
-tar -xvf ILSVRC2012_img_val.tar
-```
-# Remove the compressed .tar file after extraction
-rm -f ILSVRC2012_img_val.tar
-```
-3. Organize the Dataset
-To organize the dataset into class directories, use the script provided by Soumith Chintala. Run the following command:
-
-```bash
-wget -qO- https://raw.githubusercontent.com/soumith/imagenetloader.torch/master/valprep.sh | bash
-```
-This script creates directories for each class and moves the images into their corresponding directories. Your validation directory structure will look like this:
-
-```bash
-imagenet/val/
-├── n01440764
-│   ├── ILSVRC2012_val_00000293.JPEG
-│   ├── ILSVRC2012_val_00002138.JPEG
-│   ├── ......
-├── ......
-```
 
 ### Quantization Bias Correction
 
