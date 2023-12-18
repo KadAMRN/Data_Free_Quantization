@@ -1,10 +1,10 @@
 # Data_Free_Quantization
 
-You can access the project report [here](https://www.overleaf.com/read/bhjhjzpwshqx#2d96d5).
+You can access the project report [here]([https://www.overleaf.com/read/bhjhjzpwshqx#2d96d5](https://dropsu.sorbonne-universite.fr/s/EJHR4Ytt3g3CHrq)).
 
-## ImageNet Validation dataset available in the following link : https://drive.google.com/file/d/1Zo0LgHWhFiVheeC21Kfvuv1B9M_tuT_8/view?usp=sharing
+### ImageNet Validation dataset available in the following link : https://drive.google.com/file/d/1Zo0LgHWhFiVheeC21Kfvuv1B9M_tuT_8/view?usp=sharing
 
-## Downloading and Extracting the ImageNet Training Dataset
+### Downloading and Extracting the ImageNet Training Dataset
 
 To set up the ImageNet training dataset, follow these steps:
 
@@ -17,19 +17,19 @@ wget https://image-net.org/data/ILSVRC/2012/ILSVRC2012_img_val.tar --no-check-ce
 2. Extract the Dataset
 Execute the following commands to extract the validation data and organize it into subfolders:
 
-# Create a directory for validation data
+### Create a directory for validation data
 ```bash
 mkdir imagenet/val
 ```
-# Move the downloaded .tar file to the validation directory
+### Move the downloaded .tar file to the validation directory
 ```bash
 mv ILSVRC2012_img_val.tar imagenet/val/
 ```
-# Change to the validation directory
+### Change to the validation directory
 ```bash
 cd imagenet/val
 ```
-# Extract the .tar file
+### Extract the .tar file
 ```bash
 tar -xvf ILSVRC2012_img_val.tar
 ```
@@ -53,7 +53,7 @@ imagenet/val/
 ├── ......
 ```
 
-## Quantization Bias Correction
+### Quantization Bias Correction
 
 Dans le cadre de la quantification des DNN, une étape cruciale est la correction du biais de quantification. Cette correction est nécessaire pour atténuer les impacts négatifs que la quantification peut avoir sur la précision des modèles. La quantification, bien qu'utile pour réduire la taille du modèle et accélérer l'inférence, peut introduire des erreurs et des distorsions dans les poids et les activations du modèle. La section suivante présente les outils et méthodes que nous avons implémentés pour effectuer une correction efficace du biais de quantification, garantissant ainsi que nos modèles quantifiés conservent une performance optimale.
 
