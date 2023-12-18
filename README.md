@@ -2,6 +2,49 @@
 
 You can access the project report [here](https://dropsu.sorbonne-universite.fr/s/EJHR4Ytt3g3CHrq).
 
+This README provides instructions on how to set up your environment for the "Data_Free_Quantization" project. We'll be using virtualenv to create an isolated Python environment and conda to manage the dependencies.
+
+## Environment Setup
+### Installing virtualenv
+
+First, you need to install the virtualenv extension. You can do this by executing the following command in your Anaconda prompt:
+
+```bash
+pip install virtualenv
+```
+
+### Creating a Virtual Environment
+Once virtualenv is installed, create a Python virtual environment. For this project, we are using Python 3.8. To create your environment, run:
+
+```bash
+virtualenv myenv --python=python3.8
+```
+### Activating the Virtual Environment
+After creating the virtual environment, you need to activate it. Use the appropriate command based on your operating system.
+
+For Windows:
+
+```bash
+myenv\Scripts\activate
+```
+
+For Linux:
+
+```bash
+source myenv/bin/activate
+```
+
+### Installing Dependencies
+
+To run the code for the "Data_Free_Quantization" project, you need to install specific dependencies.
+
+- Navigate to the directory containing the Requirements.txt file.
+- Run the following command:
+
+```bash
+conda install --file Requirements.txt
+```
+
 ### ImageNet Validation dataset available in the following link : https://drive.google.com/file/d/1Zo0LgHWhFiVheeC21Kfvuv1B9M_tuT_8/view?usp=sharing
 
 ### Downloading and Extracting the ImageNet Training Dataset
