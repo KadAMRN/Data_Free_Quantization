@@ -45,6 +45,33 @@ To run the code for the "Data_Free_Quantization" project, you need to install sp
 conda install --file Requirements.txt
 ```
 
+## Running the Main Function
+### Executing `main_dfq.py`
+
+The core functionality of the "Data_Free_Quantization" project is encapsulated in main_dfq.py. This script performs Data-Free Quantization (DFQ), visualizes the weights at each step, generates relevant plots, and logs the results.
+
+To execute this script, follow these steps:
+
+- Ensure that your virtual environment is activated and that all dependencies are installed.
+
+- Navigate to the directory where main_dfq.py is located.
+
+- Run the script using the following command:
+  
+```bash
+python main_dfq.py
+```
+## Understanding the Output
+
+### DFQ Process
+The script will execute the Data-Free Quantization process, and you'll see progress logs in the console.
+
+### Plot Generation
+The script will automatically generate and save plots illustrating various metrics and aspects of the DFQ process. These plots help in visualizing the performance and behavior of the model throughout the quantization process.
+
+### Logging Results
+Detailed logs and results of the process will be saved, providing insights into the performance and outcomes of the quantization.
+
 ### ImageNet Validation dataset available in the following link : https://drive.google.com/file/d/1Zo0LgHWhFiVheeC21Kfvuv1B9M_tuT_8/view?usp=sharing
 
 ### Downloading and Extracting the ImageNet Training Dataset
