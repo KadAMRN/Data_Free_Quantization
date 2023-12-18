@@ -156,6 +156,13 @@ After quantization, bias correction is often necessary to adjust the weights fur
 
 *Figure: Boxplot and histogram showing weight distribution and frequency after bias correction.*
 
+## DFQ Results Overview
+
+The results from the Data-Free Quantization (DFQ) process are detailed in the `dfq_result.txt` file. This file contains the configurations and the corresponding accuracy metrics for various runs of the DFQ process.
+
+To review the detailed outcomes of each configuration, please refer to the `dfq_result.txt` file located in the project directory.
+
+
 ### ImageNet Validation dataset available in the following link : https://drive.google.com/file/d/1Zo0LgHWhFiVheeC21Kfvuv1B9M_tuT_8/view?usp=sharing
 
 ### Downloading and Extracting the ImageNet Training Dataset
