@@ -72,6 +72,40 @@ The script will automatically generate and save plots illustrating various metri
 ### Logging Results
 Detailed logs and results of the process will be saved, providing insights into the performance and outcomes of the quantization.
 
+## Command Overview
+
+To execute the main functionality of the Data-Free Quantization (DFQ) process with specific settings, use the following command:
+
+```bash
+python main_dfq.py --gpu --task cls --relu --equalize --absorption --quantize --correction --clip_weight --log --bits_weight 8 --bits_activation 8 --bits_bias 8
+```
+
+## Detailed Argument Explanations
+
+- `--gpu`: Engages the GPU for computational tasks, leveraging its processing power for faster execution.
+
+- `--task cls`: Specifies that the task is classification (`cls`). This setting configures the script for classification-related operations.
+
+- `--relu`: Activates the ReLU (Rectified Linear Unit) function in the neural network. ReLU is a popular activation function known for its efficiency in deep learning models.
+
+- `--equalize`: Adjusts the balance or distribution of data or weights. In quantization, this helps in optimizing the model's performance.
+
+- `--absorption`: A technique used in the quantization process that may involve merging or simplifying certain layers or parameters for efficiency.
+
+- `--quantize`: Triggers the process of quantization, which reduces the precision of the model's weights and activations to a lower bit representation.
+
+- `--correction`: A post-quantization step that adjusts the model to compensate for any loss of accuracy due to reduced precision.
+
+- `--clip_weight`: Limits the range of the model's weights. This is often used to maintain the stability and performance of the model after quantization.
+
+- `--log`: Enables the generation of logs during the process, providing detailed insights into the operations and results of the script.
+
+- `--bits_weight 8`: Sets the number of bits for the weights to 8. This is a key aspect of quantization, impacting the model's size and computational efficiency.
+
+- `--bits_activation 8`: Specifies that the activations (outputs of layers) in the neural network are quantized to 8 bits.
+
+- `--bits_bias 8`: Determines that biases in the neural network are also quantized to 8 bits, ensuring consistency in precision across different components of the model.
+
 ### ImageNet Validation dataset available in the following link : https://drive.google.com/file/d/1Zo0LgHWhFiVheeC21Kfvuv1B9M_tuT_8/view?usp=sharing
 
 ### Downloading and Extracting the ImageNet Training Dataset
